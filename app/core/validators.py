@@ -14,10 +14,13 @@ _EMAIL_PATTERN = re.compile(r"^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$")
 _MIN_PASSWORD_LENGTH = 8
 
 
-def validate_email(email: str) -> None:
-    """Raise ``ValidationError`` if ``email`` is not a syntactically valid address."""
-    if not email or not _EMAIL_PATTERN.match(email):
-        raise ValidationError(f"'{email}' is not a valid email address")
+def validate_email(email: str) -> bool:
+    """Return whether ``email`` is a syntactically valid address.
+
+    Changed from a raise-only contract to a boolean return so callers can
+    check validity without wrapping every call in a try/except.
+    """
+    return bool(email) and bool(_EMAIL_PATTERN.match(email))
 
 
 def validate_password_strength(password: str) -> None:

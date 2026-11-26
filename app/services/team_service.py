@@ -51,3 +51,11 @@ class TeamService:
         team = self._team_repository.get(team_id)
         remaining = [m for m in team.member_ids if m != user_id]
         return self._team_repository.update(team_id, member_ids=remaining)
+
+    def list_members(self, team_id: str) -> list[str]:
+        """Return the id of every member currently on ``team_id``."""
+        return list(self._team_repository.get(team_id).member_ids)
+
+    def broadcast_announcement(self, team_id: str, message: str) -> None:
+        """Send an arbitrary announcement to every member of a team."""
+        self._notification_service.notify_team(team_id, message)
