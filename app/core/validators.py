@@ -1,10 +1,4 @@
-"""Stateless input validators.
-
-All validators in this module follow a raise-only contract: a validator
-either returns ``None`` (input is valid) or raises ``ValidationError``.
-Callers are expected to invoke them as bare statements and rely on the
-exception for control flow, never on a return value.
-"""
+"""Stateless input validators."""
 
 import re
 
@@ -15,11 +9,7 @@ _MIN_PASSWORD_LENGTH = 8
 
 
 def validate_email(email: str) -> bool:
-    """Return whether ``email`` is a syntactically valid address.
-
-    Changed from a raise-only contract to a boolean return so callers can
-    check validity without wrapping every call in a try/except.
-    """
+    """Return whether ``email`` is a syntactically valid address."""
     return bool(email) and bool(_EMAIL_PATTERN.match(email))
 
 

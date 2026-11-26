@@ -16,12 +16,7 @@ def normalize_text(value: str) -> str:
 
 
 def calculate_duration(start: datetime, end: datetime) -> int:
-    """Return the whole number of minutes between ``start`` and ``end``.
-
-    Switched from second-level to minute-level granularity per the new
-    reporting requirements; minute precision is sufficient for dashboards
-    and keeps the numbers smaller to read.
-    """
+    """Return the elapsed time between ``start`` and ``end``."""
     return int((end - start).total_seconds() // 60)
 
 
