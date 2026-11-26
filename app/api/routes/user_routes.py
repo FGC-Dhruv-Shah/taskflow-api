@@ -3,10 +3,11 @@
 from fastapi import APIRouter
 
 from app.repositories.user_repository import UserRepository
+from app.services.audit_service import AuditService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
-_user_service = UserService(UserRepository())
+_user_service = UserService(UserRepository(), AuditService())
 
 
 @router.post("/register")
@@ -24,4 +25,10 @@ def login(email: str, password: str) -> dict:
 @router.patch("/{user_id}")
 def update_profile(user_id: str, name: str) -> dict:
     user = _user_service.update_profile(user_id, name)
+    return user.to_dict()
+
+
+@router.post("/{user_id}/deactivate")
+def deactivate_user(user_id: str) -> dict:
+    user = _user_service.deactivate_user(user_id)
     return user.to_dict()

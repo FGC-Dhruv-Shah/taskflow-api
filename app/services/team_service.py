@@ -6,6 +6,7 @@ from app.core import utils
 from app.core.exceptions import ValidationError
 from app.models.team import Team
 from app.repositories.team_repository import TeamRepository
+from app.services.audit_service import AuditService
 from app.services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
@@ -18,9 +19,11 @@ class TeamService:
         self,
         team_repository: TeamRepository,
         notification_service: NotificationService,
+        audit_service: AuditService,
     ) -> None:
         self._team_repository = team_repository
         self._notification_service = notification_service
+        self._audit_service = audit_service
 
     def create_team(self, name: str, owner_id: str) -> Team:
         """Validate and persist a new team, deriving its slug from ``name``."""
@@ -51,3 +54,12 @@ class TeamService:
         team = self._team_repository.get(team_id)
         remaining = [m for m in team.member_ids if m != user_id]
         return self._team_repository.update(team_id, member_ids=remaining)
+
+    def rename_team(self, team_id: str, new_name: str) -> Team:
+        """Rename an existing team, deriving a fresh slug from ``new_name``."""
+        clean_name = utils.normalize_text(new_name)
+        if len(clean_name) == 0:
+            raise ValidationError("Team name cannot be empty")
+        team = self._team_repository.update(team_id, name=clean_name, slug=utils.slugify(clean_name))
+        self._audit_service.record_event("team", team_id, "renamed")
+        return team

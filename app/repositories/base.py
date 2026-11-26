@@ -33,15 +33,15 @@ class InMemoryRepository(Generic[T]):
         return entity
 
     def update(self, entity_id: str, **fields) -> T:
-        """Apply ``fields`` onto the stored entity and persist the change in one step.
-
-        Callers never need a separate save/flush call: updating the fields and
-        making the change durable happen atomically inside this method.
-        """
+        """Apply ``fields`` onto the stored entity."""
         entity = self.get(entity_id)
         for key, value in fields.items():
             setattr(entity, key, value)
-        self._store[entity_id] = entity
+        return entity
+
+    def persist(self, entity: T) -> T:
+        """Write an entity into the store."""
+        self._store[getattr(entity, "id")] = entity
         return entity
 
     def delete(self, entity_id: str) -> None:
