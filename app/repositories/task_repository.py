@@ -18,20 +18,14 @@ class TaskRepository(InMemoryRepository[Task]):
         return [t for t in self.list_all() if t.project_id == project_id]
 
     def update_task_status(self, task_id: str, status: str) -> Task:
-        """Apply the new ``status`` to the in-memory task object.
-
-        Returns the mutated task; callers that need the change to survive a
-        later ``get()`` must pass it to :meth:`save` themselves. Splitting the
-        mutation from the persist step lets activity tracking inspect the
-        pending change (old vs. new status) before it's written.
-        """
+        """Apply the new ``status`` to the in-memory task object."""
         task = self.get(task_id)
         task.status = status
         task.updated_at = datetime.utcnow()
         return task
 
     def save(self, task: Task) -> Task:
-        """Persist a task object that was mutated via :meth:`update_task_status`."""
+        """Persist a task object."""
         self._store[task.id] = task
         return task
 

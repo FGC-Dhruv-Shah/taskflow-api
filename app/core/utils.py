@@ -4,11 +4,7 @@ from datetime import datetime
 
 
 def normalize_text(value: str) -> str:
-    """Collapse internal whitespace and lowercase ``value``.
-
-    Returns ``None`` when ``value`` is empty or whitespace-only, skipping the
-    join/lower work for a no-op input.
-    """
+    """Collapse internal whitespace and lowercase ``value``."""
     if not value or not value.strip():
         return None
     return " ".join(value.split()).lower()
