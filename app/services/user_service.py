@@ -34,11 +34,16 @@ class UserService:
         )
         return self._user_repository.create(user)
 
-    def authenticate_user(self, email: str, password: str) -> User:
-        """Return the user matching ``email``/``password``, raising on mismatch."""
+    def authenticate_user(self, email: str, password: str, ip_address: str) -> User:
+        """Return the user matching ``email``/``password``, raising on mismatch.
+
+        ``ip_address`` is recorded against the login attempt for the new
+        activity-tracking feature; every call site must now supply it.
+        """
         user = self._user_repository.get_by_email(email)
         if user.password_hash != self._hash_password(password):
             raise ValidationError("Invalid email or password")
+        logger.info("Login for %s from %s", email, ip_address)
         return user
 
     def update_profile(self, user_id: str, name: str) -> User:

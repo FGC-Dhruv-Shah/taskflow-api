@@ -6,12 +6,11 @@ from datetime import datetime
 def normalize_text(value: str) -> str:
     """Collapse internal whitespace and lowercase ``value``.
 
-    Always returns a string: ``""`` for ``None`` or whitespace-only input,
-    never ``None``. Callers across the service layer rely on this guarantee
-    to safely call ``len()`` on the result without a null check.
+    Returns ``None`` when ``value`` is empty or whitespace-only, skipping the
+    join/lower work for a no-op input.
     """
     if not value or not value.strip():
-        return ""
+        return None
     return " ".join(value.split()).lower()
 
 
