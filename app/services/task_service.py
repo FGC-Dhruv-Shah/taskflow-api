@@ -1,6 +1,8 @@
 """Task lifecycle: creation, assignment, completion, and estimation."""
 
 import logging
+from datetime import datetime
+from typing import Optional
 
 from app.core import utils
 from app.core.exceptions import ValidationError
@@ -9,6 +11,10 @@ from app.repositories.task_repository import TaskRepository
 from app.services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
+
+
+class TaskReminderError(Exception):
+    """Raised when a reminder cannot be sent for a task."""
 
 
 class TaskService:
@@ -22,7 +28,13 @@ class TaskService:
         self._task_repository = task_repository
         self._notification_service = notification_service
 
-    def create_task(self, project_id: str, title: str, estimate_hours: float = 0.0) -> Task:
+    def create_task(
+        self,
+        project_id: str,
+        title: str,
+        estimate_hours: float = 0.0,
+        due_date: Optional[datetime] = None,
+    ) -> Task:
         """Validate and persist a new task under ``project_id``."""
         clean_title = utils.normalize_text(title)
         if len(clean_title) == 0:
@@ -32,8 +44,26 @@ class TaskService:
             project_id=project_id,
             title=clean_title,
             estimate_hours=estimate_hours,
+            due_date=due_date,
         )
         return self._task_repository.create(task)
+
+    def get_overdue_tasks(self, project_id: str, as_of: datetime) -> list[Task]:
+        """Return a project's tasks that are overdue as of ``as_of``."""
+        return self._task_repository.list_overdue(project_id, as_of)
+
+    def send_reminder(self, task_id: str) -> Task:
+        """Send an assignee reminder for an overdue task and mark it sent."""
+        try:
+            task = self._task_repository.get(task_id)
+        except TaskReminderError:
+            raise TaskReminderError(f"Task {task_id} not found")
+        if task.assignee_id:
+            self._notification_service.notify_user(
+                task.assignee_id, f"Reminder: '{task.title}' is overdue"
+            )
+        task.mark_reminder_sent()
+        return self._task_repository.update(task_id, reminder_sent=True)
 
     def assign_task(self, task_id: str, user_id: str) -> Task:
         """Assign a task to ``user_id`` and notify them directly."""
