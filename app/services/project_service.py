@@ -85,6 +85,14 @@ class ProjectService:
         )
         return archived
 
+    def count_archived_tasks(self, project_id: str) -> int:
+        """Return how many of a project's tasks are currently archived."""
+        return sum(
+            1
+            for task in self._task_repository.list_by_project(project_id)
+            if task.status == "archived"
+        )
+
     def get_project_history(self, project_id: str) -> dict:
         """Return a project's current state, including deleted/archived ones.
 

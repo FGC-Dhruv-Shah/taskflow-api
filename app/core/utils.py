@@ -16,8 +16,8 @@ def normalize_text(value: str) -> str:
 
 
 def calculate_duration(start: datetime, end: datetime) -> int:
-    """Return the whole number of seconds between ``start`` and ``end``."""
-    return int((end - start).total_seconds())
+    """Return the elapsed time between ``start`` and ``end``."""
+    return int((end - start).total_seconds() // 60)
 
 
 def format_currency(amount: float, currency: str = "USD") -> str:

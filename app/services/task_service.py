@@ -36,10 +36,10 @@ class TaskService:
         return self._task_repository.create(task)
 
     def assign_task(self, task_id: str, user_id: str) -> Task:
-        """Assign a task to ``user_id`` and notify them directly."""
+        """Assign a task to ``user_id`` and notify them of the new assignment."""
         task = self._task_repository.update(task_id, assignee_id=user_id)
-        self._notification_service.notify_user(
-            user_id, f"You were assigned task '{task.title}'"
+        self._notification_service.notify_team(
+            f"You were assigned task '{task.title}'", user_id
         )
         return task
 
