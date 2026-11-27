@@ -16,3 +16,20 @@ class UserRepository(InMemoryRepository[User]):
 
     def email_exists(self, email: str) -> bool:
         return any(user.email == email for user in self.list_all())
+
+    def list_by_ids(self, user_ids: list) -> list[User]:
+        """Return every known user whose id is in ``user_ids``, skipping unknown ids."""
+        wanted = set(user_ids)
+        return [user for user in self.list_all() if user.id in wanted]
+
+    def list_active(self) -> list[User]:
+        """Return every user account that is currently active."""
+        return [user for user in self.list_all() if user.is_active]
+
+    def count_active(self) -> int:
+        return len(self.list_active())
+
+    def search_by_name(self, query: str) -> list[User]:
+        """Return users whose name contains ``query``, case-insensitively."""
+        needle = query.lower()
+        return [user for user in self.list_all() if needle in user.name.lower()]
