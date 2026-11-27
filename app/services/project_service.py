@@ -51,6 +51,19 @@ class ProjectService:
         )
         return project
 
+    def get_budget_utilization(self, project_id: str, spent_amount: float) -> float:
+        """Return how much of a project's budget has been spent, as a fraction."""
+        project = self._project_repository.get(project_id)
+        if project.budget <= 0:
+            return 0.0
+        return spent_amount / project.budget
+
+    def set_alert_threshold(self, project_id: str, threshold: float) -> Project:
+        """Update the utilization fraction at which a project should raise an alert."""
+        if not 0.0 < threshold <= 1.0:
+            raise ValidationError("Alert threshold must be between 0 and 1")
+        return self._project_repository.update(project_id, budget_alert_threshold=threshold)
+
     def archive_project(self, project_id: str, cascade: bool = True) -> Project:
         """Archive a project and, when ``cascade`` is set, archive its open tasks too.
 
