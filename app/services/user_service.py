@@ -7,6 +7,7 @@ from app.core import utils, validators
 from app.core.exceptions import ValidationError
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.services.audit_service import AuditService
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,9 @@ logger = logging.getLogger(__name__)
 class UserService:
     """Orchestrates user registration and authentication."""
 
-    def __init__(self, user_repository: UserRepository) -> None:
+    def __init__(self, user_repository: UserRepository, audit_service: AuditService) -> None:
         self._user_repository = user_repository
+        self._audit_service = audit_service
 
     def register_user(self, name: str, email: str, password: str) -> User:
         """Validate and persist a new user account."""
@@ -47,6 +49,12 @@ class UserService:
         if len(clean_name) == 0:
             raise ValidationError("Name cannot be empty")
         return self._user_repository.update(user_id, name=clean_name)
+
+    def deactivate_user(self, user_id: str) -> User:
+        """Mark a user account as inactive."""
+        user = self._user_repository.update(user_id, is_active=False)
+        self._audit_service.record_event("user", user_id, "deactivated")
+        return user
 
     @staticmethod
     def _hash_password(password: str) -> str:

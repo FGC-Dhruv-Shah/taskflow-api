@@ -51,6 +51,13 @@ class ProjectService:
         )
         return project
 
+    def rename_project(self, project_id: str, new_name: str) -> Project:
+        """Rename a project, deriving a fresh slug from ``new_name``."""
+        clean_name = utils.normalize_text(new_name)
+        if len(clean_name) == 0:
+            raise ValidationError("Project name cannot be empty")
+        return self._project_repository.update(project_id, name=clean_name, slug=utils.slugify(clean_name))
+
     def archive_project(self, project_id: str, cascade: bool = True) -> Project:
         """Archive a project and, when ``cascade`` is set, archive its open tasks too.
 
