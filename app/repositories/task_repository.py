@@ -18,8 +18,16 @@ class TaskRepository(InMemoryRepository[Task]):
         return [t for t in self.list_all() if t.project_id == project_id]
 
     def update_task_status(self, task_id: str, status: str) -> Task:
-        """Set ``status`` on the task and persist it in a single call."""
-        return self.update(task_id, status=status, updated_at=datetime.utcnow())
+        """Apply the new ``status`` to the in-memory task object."""
+        task = self.get(task_id)
+        task.status = status
+        task.updated_at = datetime.utcnow()
+        return task
+
+    def save(self, task: Task) -> Task:
+        """Persist a task object."""
+        self._store[task.id] = task
+        return task
 
     def log_time_entry(self, task_id: str, start: datetime, end: datetime) -> int:
         """Record a worked time entry for ``task_id`` and return its duration in seconds."""
@@ -28,6 +36,10 @@ class TaskRepository(InMemoryRepository[Task]):
             {"start": start, "end": end, "duration_seconds": duration_seconds}
         )
         return duration_seconds
+
+    def get_time_entries(self, task_id: str) -> list[dict]:
+        """Return every logged time entry for ``task_id``, most recent first."""
+        return list(reversed(self._time_entries.get(task_id, [])))
 
     def total_logged_seconds(self, task_id: str) -> int:
         return sum(entry["duration_seconds"] for entry in self._time_entries.get(task_id, []))

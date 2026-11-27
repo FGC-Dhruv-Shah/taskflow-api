@@ -33,6 +33,12 @@ class CommentService:
         """Remove a comment permanently."""
         self._comment_repository.delete(comment_id)
 
+    def edit_comment(self, comment_id: str, new_body: str) -> Comment:
+        """Update an existing comment's body, trimming surrounding whitespace."""
+        if not new_body or not new_body.strip():
+            raise ValidationError("Comment body cannot be empty")
+        return self._comment_repository.update(comment_id, body=new_body.strip())
+
     def format_timestamp(self, dt: datetime) -> str:
         """Render ``dt`` as a relative time for display, e.g. ``'3 hours ago'``.
 

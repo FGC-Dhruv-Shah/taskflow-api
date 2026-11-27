@@ -4,14 +4,9 @@ from datetime import datetime
 
 
 def normalize_text(value: str) -> str:
-    """Collapse internal whitespace and lowercase ``value``.
-
-    Always returns a string: ``""`` for ``None`` or whitespace-only input,
-    never ``None``. Callers across the service layer rely on this guarantee
-    to safely call ``len()`` on the result without a null check.
-    """
+    """Collapse internal whitespace and lowercase ``value``."""
     if not value or not value.strip():
-        return ""
+        return None
     return " ".join(value.split()).lower()
 
 
